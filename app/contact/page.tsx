@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ContactForm } from "@/components/contact/ContactForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -72,29 +73,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <form className="mt-6 space-y-3" aria-label="Contact form">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-medium text-slate-700">
-                Name
-                <input type="text" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-              </label>
-              <label className="text-sm font-medium text-slate-700">
-                Email
-                <input type="email" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-              </label>
-            </div>
-            <label className="text-sm font-medium text-slate-700">
-              Phone
-              <input type="tel" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" />
-            </label>
-            <label className="text-sm font-medium text-slate-700">
-              Message
-              <textarea className="mt-1 h-32 w-full rounded-md border border-slate-300 px-3 py-2" />
-            </label>
-            <button type="button" className="rounded-md bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800">
-              Submit Request
-            </button>
-          </form>
+          <ContactForm />
         </article>
 
         <aside className="space-y-4">

@@ -84,13 +84,13 @@ export function Header() {
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <a
                   href={`tel:${siteConfig.phoneHref}`}
-                  className="tap-target rounded-md border border-slate-300 px-2.5 py-2 text-center text-sm font-semibold text-slate-700"
+                  className="tap-target inline-flex items-center justify-center rounded-md border border-slate-300 px-2.5 py-2 text-center text-sm font-semibold text-slate-700"
                 >
                   Call
                 </a>
                 <Link
                   href="/contact"
-                  className="tap-target rounded-md bg-sky-700 px-2.5 py-2 text-center text-sm font-semibold text-white"
+                  className="tap-target inline-flex items-center justify-center rounded-md bg-sky-700 px-2.5 py-2 text-center text-sm font-semibold text-white"
                 >
                   Book
                 </Link>
@@ -103,13 +103,13 @@ export function Header() {
           <div className="mx-auto flex w-full max-w-md items-center justify-center gap-2">
             <a
               href={`tel:${siteConfig.phoneHref}`}
-              className="tap-target flex-1 rounded-md border border-slate-300 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-100"
+              className="tap-target inline-flex flex-1 items-center justify-center rounded-md border border-slate-300 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-100"
             >
               Call {siteConfig.phoneDisplay}
             </a>
             <Link
               href="/contact"
-              className="tap-target flex-1 rounded-md bg-sky-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-sky-800"
+              className="tap-target inline-flex flex-1 items-center justify-center rounded-md bg-sky-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-sky-800"
             >
               Book Consultation
             </Link>

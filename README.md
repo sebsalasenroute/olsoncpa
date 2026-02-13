@@ -55,6 +55,19 @@ npm run test:run
 5. Output: `.next`
 6. Deploy.
 
+## Contact Form (Production)
+The contact form posts to `/api/contact` and sends email through Resend.
+
+Required environment variables:
+- `RESEND_API_KEY`
+- `CONTACT_FROM_EMAIL` (must be a verified sender/domain in Resend)
+- `CONTACT_TO_EMAIL` (inbox destination)
+
+Security controls included:
+- basic server-side validation
+- honeypot field
+- basic in-memory rate limiting per IP
+
 ## Calculator Framework Architecture
 - Catalog and SEO/page content: `lib/calculators/catalog.ts`
 - Runner loader map (code-splitting): `lib/calculators/engine.ts`
