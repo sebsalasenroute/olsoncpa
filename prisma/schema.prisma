@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EntityType {
+  SOLE_PROP
+  PARTNERSHIP
+  CORPORATION
+  TRUST
+}
+
+enum GstHstStatus {
+  REGISTERED
+  NOT_REGISTERED
+  EXEMPT
+}
+
+enum EngagementStatus {
+  OPEN
+  CLOSED
+}
+
+enum DocumentType {
+  BANK_STATEMENT
+  CREDIT_CARD_STATEMENT
+  CSV
+  EXCEL
+  PRIOR_YEAR_SPREADSHEET
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PROCESSING
+  EXTRACTED
+  FAILED
+}
+
+enum ExtractionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ClassificationStatus {
+  PENDING
+  SUGGESTED
+  APPROVED
+}
+
+enum TransactionCategory {
+  ADVERTISING
+  MEALS_ENTERTAINMENT
+  OFFICE_EXPENSES
+  PROFESSIONAL_FEES
+  TRAVEL
+  VEHICLE
+  SOFTWARE
+  BANK_CHARGES
+  OWNER_DRAW
+  RENT_LEASE
+  UTILITIES
+  INSURANCE
+  PAYROLL_WAGES
+  PAYROLL_TAXES
+  SUBCONTRACTORS
+  TRAINING_EDUCATION
+  TELECOM_INTERNET
+  CHARITABLE_DONATIONS
+  INTEREST_EXPENSE
+  TAXES_LICENSES
+  COST_OF_GOODS_SOLD
+  GST_HST_PAID
+  GST_HST_COLLECTED
+  CAPITAL_ASSET
+  HOME_OFFICE
+  OTHER_INCOME
+  UNCATEGORIZED
+}
+
+enum VendorRuleScope {
+  FIRM
+  CLIENT
+}
+
+enum UserRole {
+  ADMIN
+  ACCOUNTANT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  SPLIT
+  EXPORT
+  SYSTEM
+}
+
+enum ExportFormat {
+  CSV
+  XLSX
+}
+
+enum ExportStatus {
+  CREATED
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  name           String
+  role           UserRole         @default(ACCOUNTANT)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  auditLogs      AuditLog[]
+  documents      Document[]
+  approvals      Transaction[]    @relation("ApprovedBy")
+  vendorRules    VendorRule[]
+  exports        ExportJob[]
+}
+
+model Client {
+  id           String       @id @default(cuid())
+  name         String
+  legalName    String?
+  entityType   EntityType
+  province     String
+  gstHstStatus GstHstStatus
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  engagements  Engagement[]
+  vendorRules  VendorRule[]
+
+  @@index([name])
+}
+
+model Engagement {
+  id            String        @id @default(cuid())
+  clientId      String
+  taxYear       Int
+  status        EngagementStatus @default(OPEN)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  documents     Document[]
+  transactions  Transaction[]
+  exportJobs    ExportJob[]
+
+  @@unique([clientId, taxYear])
+  @@index([taxYear])
+}
+
+model Document {
+  id            String         @id @default(cuid())
+  engagementId  String
+  name          String
+  type          DocumentType
+  storageKey    String
+  checksum      String?
+  version       Int            @default(1)
+  status        DocumentStatus @default(UPLOADED)
+  uploadedById  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  processedAt   DateTime?
+  engagement    Engagement     @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  uploadedBy    User?          @relation(fields: [uploadedById], references: [id])
+  extractions   Extraction[]
+  transactions  Transaction[]
+
+  @@index([engagementId])
+  @@index([status])
+}
+
+model Extraction {
+  id            String           @id @default(cuid())
+  documentId    String
+  rawData       Json?
+  parsedData    Json?
+  parsedRowCount Int             @default(0)
+  status        ExtractionStatus @default(PENDING)
+  errorMessage  String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  document      Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+
+  @@unique([documentId])
+  @@index([documentId])
+  @@index([status])
+}
+
+model Transaction {
+  id                   String               @id @default(cuid())
+  engagementId         String
+  documentId           String
+  extractionId         String?
+  splitParentId        String?
+  date                 DateTime
+  description          String
+  amount               Decimal              @db.Decimal(12, 2)
+  currency             String               @default("CAD")
+  cadAmount            Decimal?             @db.Decimal(12, 2)
+  account              String?
+  sourceDocumentId     String
+  normalizedHash       String
+  category             TransactionCategory?
+  classificationStatus ClassificationStatus @default(PENDING)
+  approvedById         String?
+  approvedAt           DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  engagement           Engagement           @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  document             Document             @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  extraction           Extraction?          @relation(fields: [extractionId], references: [id], onDelete: SetNull)
+  splitParent          Transaction?         @relation("SplitTree", fields: [splitParentId], references: [id], onDelete: SetNull)
+  splitChildren        Transaction[]        @relation("SplitTree")
+  classifications      Classification[]
+  approvedBy           User?                @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  @@unique([engagementId, normalizedHash])
+  @@index([engagementId, approvedAt])
+  @@index([classificationStatus])
+  @@index([sourceDocumentId])
+}
+
+model Classification {
+  id                String               @id @default(cuid())
+  transactionId     String
+  provider          String
+  model             String
+  suggestedCategory TransactionCategory
+  confidenceScore   Float
+  explanation       String
+  taxNotes          String?
+  costEstimateCad   Decimal?             @db.Decimal(8, 4)
+  status            ClassificationStatus @default(SUGGESTED)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  transaction       Transaction          @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([transactionId, createdAt])
+  @@index([status])
+}
+
+model VendorRule {
+  id          String              @id @default(cuid())
+  clientId    String?
+  scope       VendorRuleScope
+  vendorPattern String
+  category    TransactionCategory
+  taxNotes    String?
+  createdById String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  client      Client?             @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdBy   User?               @relation(fields: [createdById], references: [id])
+
+  @@unique([clientId, scope, vendorPattern])
+  @@index([clientId, scope])
+  @@index([vendorPattern])
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  entityType  String
+  entityId    String
+  action      AuditAction
+  actorId     String?
+  before      Json?
+  after       Json?
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  actor       User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([action])
+}
+
+model ExportJob {
+  id          String      @id @default(cuid())
+  engagementId String
+  format      ExportFormat
+  fileKey     String?
+  status      ExportStatus @default(CREATED)
+  totalsJson  Json?
+  createdById String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  engagement  Engagement  @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  createdBy   User?       @relation(fields: [createdById], references: [id])
+
+  @@index([engagementId, createdAt])
+  @@index([status])
+}
