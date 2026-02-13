@@ -7,3 +7,5 @@ prisma/dev.db-journal
 coverage
 .DS_Store
 *.tsbuildinfo
+tmp/
+.venv/
