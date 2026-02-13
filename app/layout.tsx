@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <TopBanner text="Tax season reminder: estimate early, file confidently. Ask Olson & Company for a planning review." imageSrc="/images/banner-tax-season.jpg" />
+        <TopBanner text="Tax season reminder: estimate early, file confidently. Ask Olson & Company for a planning review." />
         <Header />
         <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           {children}

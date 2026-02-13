@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/lib/site";
 
@@ -38,8 +37,14 @@ export function Header() {
         </div>
 
         <div className="flex items-center justify-between gap-3 pt-2 md:pt-3">
-          <Link href="/" className="flex items-center" aria-label="Olson & Company Home">
-            <Image src="/images/logo-olson-company.svg" alt="Olson & Company" width={220} height={58} priority />
+          <Link
+            href="/"
+            className="tap-target inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+            aria-label="Olson & Company Home"
+          >
+            <span className="text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
+              Olson & Co, CA, CPA
+            </span>
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-5 text-sm font-medium text-slate-700 lg:flex">
@@ -49,21 +54,6 @@ export function Header() {
               </Link>
             ))}
           </nav>
-
-          <div className="hidden items-center gap-2 md:flex">
-            <a
-              href={`tel:${siteConfig.phoneHref}`}
-              className="tap-target rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-            >
-              Call {siteConfig.phoneDisplay}
-            </a>
-            <Link
-              href="/contact"
-              className="tap-target rounded-md bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800"
-            >
-              Book Consultation
-            </Link>
-          </div>
 
           <details className="relative md:hidden">
             <summary className="tap-target cursor-pointer list-none rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700">
@@ -107,6 +97,23 @@ export function Header() {
               </div>
             </div>
           </details>
+        </div>
+
+        <div className="hidden border-t border-slate-200 pt-2 md:block">
+          <div className="mx-auto flex w-full max-w-md items-center justify-center gap-2">
+            <a
+              href={`tel:${siteConfig.phoneHref}`}
+              className="tap-target flex-1 rounded-md border border-slate-300 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              Call {siteConfig.phoneDisplay}
+            </a>
+            <Link
+              href="/contact"
+              className="tap-target flex-1 rounded-md bg-sky-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-sky-800"
+            >
+              Book Consultation
+            </Link>
+          </div>
         </div>
       </div>
     </header>
