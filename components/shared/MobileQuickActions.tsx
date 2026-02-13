@@ -7,13 +7,13 @@ export function MobileQuickActions() {
       <div className="mx-auto flex w-full max-w-md items-center justify-center gap-2">
         <a
           href={`tel:${siteConfig.phoneHref}`}
-          className="tap-target flex-1 rounded-md border border-slate-300 px-3 py-2.5 text-center text-sm font-semibold text-slate-700"
+          className="tap-target inline-flex flex-1 items-center justify-center rounded-md border border-slate-300 px-3 py-2.5 text-center text-sm font-semibold text-slate-700"
         >
           Call {siteConfig.phoneDisplay}
         </a>
         <Link
           href="/contact"
-          className="tap-target flex-1 rounded-md bg-sky-700 px-3 py-2.5 text-center text-sm font-semibold text-white"
+          className="tap-target inline-flex flex-1 items-center justify-center rounded-md bg-sky-700 px-3 py-2.5 text-center text-sm font-semibold text-white"
         >
           Book Consultation
         </Link>
