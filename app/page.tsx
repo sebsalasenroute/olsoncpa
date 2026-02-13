@@ -46,12 +46,12 @@ export default function HomePage() {
               <dd className="mt-1 text-sm font-semibold text-slate-900">BC / Lower Mainland</dd>
             </div>
             <div className="rounded-lg bg-slate-50 p-3">
-              <dt className="text-xs uppercase text-slate-500">Service model</dt>
-              <dd className="mt-1 text-sm font-semibold text-slate-900">In-person + virtual</dd>
+              <dt className="text-xs uppercase text-slate-500">Engagement</dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-900">Partner-led planning and compliance</dd>
             </div>
             <div className="rounded-lg bg-slate-50 p-3">
-              <dt className="text-xs uppercase text-slate-500">Coverage</dt>
-              <dd className="mt-1 text-sm font-semibold text-slate-900">16+ city pages</dd>
+              <dt className="text-xs uppercase text-slate-500">Client Profile</dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-900">Families, founders, and growing firms</dd>
             </div>
           </dl>
         </div>
@@ -66,8 +66,8 @@ export default function HomePage() {
             className="h-56 w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
           />
           <Image
-            src="/images/hero-team-working.jpg"
-            alt="Olson & Company team working"
+            src="/images/banner-bookkeeping.jpg"
+            alt="Tax planning documents and bookkeeping worksheet"
             width={1200}
             height={650}
             className="h-56 w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
