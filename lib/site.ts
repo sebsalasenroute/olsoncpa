@@ -3,7 +3,7 @@ export const siteConfig = {
   legalName: "Olson & Company",
   description:
     "Accounting and tax services for families and businesses across Metro Vancouver, with a New Westminster office serving the Lower Mainland.",
-  url: "https://olsoncompany.ca",
+  url: "https://olsonca.com",
   phoneDisplay: "604.525.9295",
   phoneHref: "+16045259295",
   address: {
