@@ -16,6 +16,7 @@ export function ServiceHeroBanner({ title, subtitle, imageSrc }: ServiceHeroBann
         height={520}
         className="h-56 w-full object-cover md:h-64"
         priority
+        sizes="(min-width: 1280px) 1200px, 100vw"
       />
       <div className="absolute inset-0 bg-slate-900/50" />
       <div className="absolute inset-0 flex items-end p-6 md:p-8">

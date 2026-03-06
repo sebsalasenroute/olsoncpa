@@ -3,7 +3,10 @@ export const siteConfig = {
   legalName: "Olson & Company",
   description:
     "Accounting and tax services for families and businesses across Metro Vancouver, with a New Westminster office serving the Lower Mainland.",
-  url: "https://olsoncompany.ca",
+  url: "https://olsonca.com",
+  logoPath: "/images/logo-olson-company.svg",
+  socialImagePath: "/images/banner-tax-season.jpg",
+  officeMapImagePath: "/images/map-new-westminster.jpg",
   phoneDisplay: "604.525.9295",
   phoneHref: "+16045259295",
   address: {
@@ -43,7 +46,7 @@ export const siteConfig = {
     "Tri-Cities"
   ],
   socials: {
-    ogDefault: "/images/hero-office-exterior.jpg"
+    ogDefault: "/images/banner-tax-season.jpg"
   }
 } as const;
 

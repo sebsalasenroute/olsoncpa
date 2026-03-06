@@ -8,7 +8,7 @@ import { services } from "@/lib/services";
 export const metadata = buildMetadata({
   title: "Accounting Services",
   description:
-    "Personal tax, corporate tax, bookkeeping, payroll, GST/HST advisory, and tax planning services from Olson & Company.",
+    "Personal tax, corporate tax, film industry tax, cross-border tax, bookkeeping, payroll, GST/HST advisory, and tax planning services from Olson & Company.",
   path: "/services",
   image: "/images/banner-bookkeeping.jpg"
 });

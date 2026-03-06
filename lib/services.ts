@@ -89,6 +89,58 @@ export const services: Service[] = [
     ]
   },
   {
+    slug: "film-industry-tax",
+    name: "Film Industry Tax",
+    shortDescription:
+      "Accounting and tax support for BC film and television producers, production companies, and independent contractors.",
+    heroSubtitle:
+      "Align project-based bookkeeping, payroll, and filing timelines so production accounting stays clear under deadline pressure.",
+    heroImage: "/images/banner-payroll.jpg",
+    benefits: [
+      "Workflow support for production-cycle bookkeeping and cost tracking",
+      "Payroll and contractor payment planning for project teams",
+      "Year-end file readiness for tax filings and credit discussions"
+    ],
+    process: [
+      "Production accounting intake and reporting workflow setup",
+      "Cycle-based bookkeeping, payroll, and remittance checkpoints",
+      "Year-end handoff package with planning notes for next production"
+    ],
+    relatedCalculatorSlugs: [
+      "payroll-gross-to-net",
+      "contractor-vs-employee-cost",
+      "gst-hst-calculator",
+      "cash-flow-forecast",
+      "break-even-calculator"
+    ]
+  },
+  {
+    slug: "cross-border-tax",
+    name: "Cross-Border Tax",
+    shortDescription:
+      "Cross-border tax support for Canada-US income, residency changes, and filing coordination across personal and business scenarios.",
+    heroSubtitle:
+      "Clarify reporting obligations early, map filing timelines, and coordinate assumptions before deadlines and major transactions.",
+    heroImage: "/images/banner-corporate-tax.jpg",
+    benefits: [
+      "Canada-US filing coordination with documented assumptions",
+      "Residency and income-source review for planning conversations",
+      "Practical timing guidance before payroll, dividend, or compensation decisions"
+    ],
+    process: [
+      "Scope review of jurisdictions, entities, and filing requirements",
+      "Scenario planning and deadline calendar with required records",
+      "Year-end execution support and next-year planning handoff"
+    ],
+    relatedCalculatorSlugs: [
+      "canadian-income-tax-estimator",
+      "incorporation-vs-sole-prop",
+      "contractor-vs-employee-cost",
+      "cash-flow-forecast",
+      "business-loan-payment"
+    ]
+  },
+  {
     slug: "bookkeeping",
     name: "Bookkeeping",
     shortDescription:

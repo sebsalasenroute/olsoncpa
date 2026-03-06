@@ -5,6 +5,8 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/calculators", label: "Calculators" },
   { href: "/services", label: "Services" },
+  { href: "/services/film-industry-tax", label: "Film Industry" },
+  { href: "/services/cross-border-tax", label: "Cross-Border Tax" },
   { href: "/locations", label: "Locations" },
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" }
@@ -55,7 +57,7 @@ export function Header() {
             ))}
           </nav>
 
-          <details className="relative md:hidden">
+          <details className="relative lg:hidden">
             <summary className="tap-target cursor-pointer list-none rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700">
               Menu
             </summary>

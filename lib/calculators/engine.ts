@@ -27,6 +27,6 @@ export async function loadCalculatorRunner(slug: string): Promise<CalculatorRunn
     return null;
   }
 
-  const module = await loader();
-  return module.run;
+  const calculatorModule = await loader();
+  return calculatorModule.run;
 }

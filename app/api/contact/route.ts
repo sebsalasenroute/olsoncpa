@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-
-type ContactPayload = {
-  name: string;
-  email: string;
-  phone?: string;
-  message: string;
-  company?: string;
-};
+import { z } from "zod";
+import { siteConfig } from "@/lib/site";
 
 type RateLimitRecord = {
   count: number;
@@ -15,6 +9,15 @@ type RateLimitRecord = {
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
+const MAX_CONTENT_LENGTH = 20_000;
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  email: z.string().trim().email().max(320),
+  phone: z.string().trim().max(40).optional().default(""),
+  message: z.string().trim().min(10).max(4_000),
+  company: z.string().trim().max(120).optional().default("")
+});
 
 const globalStore = globalThis as typeof globalThis & {
   __olsonContactRate?: Map<string, RateLimitRecord>;
@@ -51,8 +54,31 @@ function checkRateLimit(ip: string) {
   return true;
 }
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+function buildAllowedOrigins() {
+  const origins = new Set([siteConfig.url, "http://localhost:3000", "http://127.0.0.1:3000"]);
+  if (process.env.VERCEL_URL) {
+    origins.add(`https://${process.env.VERCEL_URL}`);
+  }
+  return origins;
+}
+
+function hasAllowedOrigin(request: NextRequest) {
+  const allowedOrigins = buildAllowedOrigins();
+  const origin = request.headers.get("origin");
+  if (origin) {
+    return allowedOrigins.has(origin);
+  }
+
+  const referer = request.headers.get("referer");
+  if (referer) {
+    for (const allowedOrigin of allowedOrigins) {
+      if (referer.startsWith(`${allowedOrigin}/`) || referer === allowedOrigin) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 function escapeHtml(value: string) {
@@ -65,40 +91,50 @@ function escapeHtml(value: string) {
 }
 
 export async function POST(request: NextRequest) {
+  const contentType = request.headers.get("content-type") ?? "";
+  const declaredLength = Number(request.headers.get("content-length") ?? 0);
+
+  if (!contentType.includes("application/json")) {
+    return NextResponse.json({ message: "Unsupported content type." }, { status: 415 });
+  }
+
+  if (declaredLength > MAX_CONTENT_LENGTH) {
+    return NextResponse.json({ message: "Request body is too large." }, { status: 413 });
+  }
+
+  if (!hasAllowedOrigin(request)) {
+    return NextResponse.json({ message: "Origin not allowed." }, { status: 403 });
+  }
+
   const ip = getClientIp(request);
 
   if (!checkRateLimit(ip)) {
     return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
   }
 
-  let payload: ContactPayload;
+  let rawPayload: unknown;
 
   try {
-    payload = (await request.json()) as ContactPayload;
+    rawPayload = await request.json();
   } catch {
     return NextResponse.json({ message: "Invalid request body." }, { status: 400 });
   }
+
+  const parsedPayload = contactSchema.safeParse(rawPayload);
+  if (!parsedPayload.success) {
+    return NextResponse.json({ message: "Please check your form fields and try again." }, { status: 400 });
+  }
+
+  const payload = parsedPayload.data;
 
   if (payload.company && payload.company.trim().length > 0) {
     return NextResponse.json({ message: "Request ignored." }, { status: 200 });
   }
 
-  const name = payload.name?.trim();
-  const email = payload.email?.trim().toLowerCase();
-  const phone = payload.phone?.trim() ?? "";
-  const message = payload.message?.trim();
-
-  if (!name || !email || !message) {
-    return NextResponse.json({ message: "Name, email, and message are required." }, { status: 400 });
-  }
-
-  if (!isValidEmail(email)) {
-    return NextResponse.json({ message: "Please enter a valid email address." }, { status: 400 });
-  }
-
-  if (message.length < 10) {
-    return NextResponse.json({ message: "Message is too short." }, { status: 400 });
-  }
+  const name = payload.name;
+  const email = payload.email.toLowerCase();
+  const phone = payload.phone;
+  const message = payload.message;
 
   const resendApiKey = process.env.RESEND_API_KEY;
   const contactTo = process.env.CONTACT_TO_EMAIL;
@@ -128,21 +164,28 @@ export async function POST(request: NextRequest) {
 
   const text = `New Contact Request\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || "Not provided"}\nIP: ${ip}\n\nMessage:\n${message}`;
 
-  const resendResponse = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: contactFrom,
-      to: [contactTo],
-      reply_to: email,
-      subject,
-      html,
-      text
-    })
-  });
+  let resendResponse: Response;
+
+  try {
+    resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      signal: AbortSignal.timeout(8_000),
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: contactFrom,
+        to: [contactTo],
+        reply_to: email,
+        subject,
+        html,
+        text
+      })
+    });
+  } catch {
+    return NextResponse.json({ message: "Unable to send your request at this time." }, { status: 502 });
+  }
 
   if (!resendResponse.ok) {
     return NextResponse.json({ message: "Unable to send your request at this time." }, { status: 502 });

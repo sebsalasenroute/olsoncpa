@@ -9,6 +9,7 @@ import { calculatorBySlug } from "@/lib/calculators/catalog";
 import { cityBySlug, cityPages } from "@/lib/cities";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { buildBreadcrumbSchema, buildFaqSchema, buildLocalBusinessSchema } from "@/lib/schema";
+import { servicesBySlug } from "@/lib/services";
 
 const fallbackCalculatorSlugs = [
   "canadian-income-tax-estimator",
@@ -53,6 +54,12 @@ export default function CityPage({ params }: CityPageProps) {
   const calculators = (city.featuredCalculatorSlugs.length ? city.featuredCalculatorSlugs : fallbackCalculatorSlugs)
     .map((slug) => calculatorBySlug[slug])
     .filter((value): value is NonNullable<typeof value> => Boolean(value));
+  const services = calculators
+    .flatMap((calculator) => calculator.relatedServiceSlugs)
+    .filter((slug, index, all) => all.indexOf(slug) === index)
+    .map((slug) => servicesBySlug[slug])
+    .filter((value): value is NonNullable<typeof value> => Boolean(value))
+    .slice(0, 4);
 
   return (
     <div className="space-y-6">
@@ -63,7 +70,13 @@ export default function CityPage({ params }: CityPageProps) {
           { name: city.name, path: `/locations/${city.slug}` }
         ])}
       />
-      <JsonLd data={buildLocalBusinessSchema({ areaServed: [city.name], urlPath: `/locations/${city.slug}` })} />
+      <JsonLd
+        data={buildLocalBusinessSchema({
+          areaServed: [city.name],
+          urlPath: `/locations/${city.slug}`,
+          imagePath: city.image
+        })}
+      />
       <JsonLd data={buildFaqSchema(city.faqs)} />
       <Breadcrumbs
         items={[
@@ -111,6 +124,24 @@ export default function CityPage({ params }: CityPageProps) {
               <p className="mt-2 text-sm text-slate-700">{calculator.shortDescription}</p>
               <Link href={`/calculators/${calculator.slug}`} className="mt-3 inline-flex text-sm font-semibold text-sky-700 hover:underline">
                 Open calculator
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+        <h2 className="text-2xl font-semibold text-slate-900">Services Commonly Requested by {city.name} Clients</h2>
+        <p className="mt-2 text-sm text-slate-700">
+          These service lines typically pair well with the planning topics and operating pressures described for {city.name}.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {services.map((service) => (
+            <article key={service.slug} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <h3 className="text-base font-semibold text-slate-900">{service.name}</h3>
+              <p className="mt-2 text-sm text-slate-700">{service.shortDescription}</p>
+              <Link href={`/services/${service.slug}`} className="mt-3 inline-flex text-sm font-semibold text-sky-700 hover:underline">
+                Explore service
               </Link>
             </article>
           ))}

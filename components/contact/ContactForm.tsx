@@ -69,6 +69,7 @@ export function ContactForm() {
             name="name"
             type="text"
             required
+            autoComplete="name"
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             value={form.name}
             onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
@@ -81,6 +82,7 @@ export function ContactForm() {
             name="email"
             type="email"
             required
+            autoComplete="email"
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             value={form.email}
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
@@ -94,6 +96,7 @@ export function ContactForm() {
           id="contact-phone"
           name="phone"
           type="tel"
+          autoComplete="tel"
           className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
           value={form.phone}
           onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
@@ -138,7 +141,7 @@ export function ContactForm() {
       {feedback ? (
         <p
           className={`text-sm ${status === "success" ? "text-emerald-700" : "text-rose-700"}`}
-          role="status"
+          role={status === "error" ? "alert" : "status"}
           aria-live="polite"
         >
           {feedback}

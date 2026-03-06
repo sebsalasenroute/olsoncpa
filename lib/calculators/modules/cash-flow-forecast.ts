@@ -40,6 +40,14 @@ export const run: CalculatorRunner = (inputs) => {
         { key: "cash", name: "Ending Cash", color: "#0284c7" },
         { key: "net", name: "Monthly Net", color: "#334155" }
       ]
-    }
+    },
+    detailsTitle: "12-month cash flow table",
+    details: rows.map((row) => ({
+      Month: row.month,
+      Revenue: formatCurrency(row.revenue),
+      Expenses: formatCurrency(row.expense),
+      Net: formatCurrency(row.net),
+      "Ending Cash": formatCurrency(row.cash)
+    }))
   };
 };

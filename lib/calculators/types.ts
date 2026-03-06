@@ -56,6 +56,7 @@ export type CalculatorOutput = {
   narrative: string[];
   chart?: CalculatorChart;
   warnings?: string[];
+  detailsTitle?: string;
   details?: Array<Record<string, string | number>>;
 };
 
