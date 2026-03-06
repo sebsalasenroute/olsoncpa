@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CalculatorDetailsTable } from "@/components/calculators/CalculatorDetailsTable";
 import { calculatorBySlug } from "@/lib/calculators/catalog";
 import { monthKeys, monthLabels } from "@/lib/calculators/constants";
 import { loadCalculatorRunner } from "@/lib/calculators/engine";
@@ -96,6 +97,17 @@ function validateField(field: CalculatorField, value: CalculatorInputValue) {
   return "";
 }
 
+function describedByIds(fieldId: string, field: CalculatorField, error: string) {
+  const ids = [];
+  if (field.helpText) {
+    ids.push(`${fieldId}-help`);
+  }
+  if (error) {
+    ids.push(`${fieldId}-error`);
+  }
+  return ids.length > 0 ? ids.join(" ") : undefined;
+}
+
 export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
   const calculator = calculatorBySlug[slug];
   const pathname = usePathname();
@@ -125,8 +137,29 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
   }, [slug]);
 
   useEffect(() => {
-    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    setShowChart(isDesktop);
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const legacyMediaQuery = mediaQuery as MediaQueryList & {
+      addListener?: (listener: (event: MediaQueryListEvent) => void) => void;
+      removeListener?: (listener: (event: MediaQueryListEvent) => void) => void;
+    };
+    const syncChartVisibility = () => {
+      setShowChart(mediaQuery.matches);
+    };
+
+    syncChartVisibility();
+    if ("addEventListener" in mediaQuery) {
+      mediaQuery.addEventListener("change", syncChartVisibility);
+    } else if (legacyMediaQuery.addListener) {
+      legacyMediaQuery.addListener(syncChartVisibility);
+    }
+
+    return () => {
+      if ("removeEventListener" in mediaQuery) {
+        mediaQuery.removeEventListener("change", syncChartVisibility);
+      } else if (legacyMediaQuery.removeListener) {
+        legacyMediaQuery.removeListener(syncChartVisibility);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -178,10 +211,24 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
     window.history.replaceState({}, "", `${pathname}?${params.toString()}`);
 
     try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({
+          title: calculator.title,
+          text: `Review this ${calculator.title.toLowerCase()} scenario from Olson & Company.`,
+          url: shareUrl
+        });
+        setShareCopied(true);
+        window.setTimeout(() => setShareCopied(false), 1800);
+        return;
+      }
+
       await navigator.clipboard.writeText(shareUrl);
       setShareCopied(true);
       window.setTimeout(() => setShareCopied(false), 1800);
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
       setShareCopied(false);
     }
   };
@@ -253,22 +300,20 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
             const value = values[field.key];
             const error = errors[field.key];
             const fieldId = `${calculator.slug}-${field.key}`;
+            const descriptionIds = describedByIds(fieldId, field, error);
 
             if (field.type === "select") {
               return (
-                <label key={field.key} className="block" htmlFor={fieldId}>
-                  <span className="mb-1 inline-flex items-center text-sm font-medium text-slate-800">
+                <div key={field.key}>
+                  <label className="mb-1 inline-flex items-center text-sm font-medium text-slate-800" htmlFor={fieldId}>
                     {field.label}
-                    {field.helpText ? (
-                      <span className="ml-1 cursor-help text-slate-400" title={field.helpText}>
-                        ?
-                      </span>
-                    ) : null}
-                  </span>
+                  </label>
                   <select
                     id={fieldId}
                     className="tap-target w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                     value={String(value)}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={descriptionIds}
                     onChange={(event) => {
                       const nextValue = event.target.value;
                       setValues((current) => ({ ...current, [field.key]: nextValue }));
@@ -276,11 +321,21 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                   >
                     {field.options?.map((option) => (
                       <option key={option.value} value={option.value}>
-                        {option.label}
+                      {option.label}
                       </option>
                     ))}
                   </select>
-                </label>
+                  {field.helpText ? (
+                    <p id={`${fieldId}-help`} className="mt-1 text-xs text-slate-500">
+                      {field.helpText}
+                    </p>
+                  ) : null}
+                  {error ? (
+                    <p id={`${fieldId}-error`} className="mt-1 text-xs text-rose-600">
+                      {error}
+                    </p>
+                  ) : null}
+                </div>
               );
             }
 
@@ -295,11 +350,17 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                     id={fieldId}
                     type="checkbox"
                     checked={Boolean(value)}
+                    aria-describedby={descriptionIds}
                     onChange={(event) => {
                       setValues((current) => ({ ...current, [field.key]: event.target.checked }));
                     }}
                   />
                   <span className="text-sm font-medium text-slate-800">{field.label}</span>
+                  {field.helpText ? (
+                    <span id={`${fieldId}-help`} className="sr-only">
+                      {field.helpText}
+                    </span>
+                  ) : null}
                 </label>
               );
             }
@@ -310,12 +371,12 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                 <div key={field.key} className="rounded-lg border border-slate-300 p-3">
                   <div className="mb-2 inline-flex items-center text-sm font-medium text-slate-800">
                     {field.label}
-                    {field.helpText ? (
-                      <span className="ml-1 cursor-help text-slate-400" title={field.helpText}>
-                        ?
-                      </span>
-                    ) : null}
                   </div>
+                  {field.helpText ? (
+                    <p id={`${fieldId}-help`} className="mb-3 text-xs text-slate-500">
+                      {field.helpText}
+                    </p>
+                  ) : null}
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                     {monthKeys.map((monthKey, index) => (
                       <label key={monthKey} className="text-xs">
@@ -325,6 +386,9 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                           inputMode="decimal"
                           className="tap-target w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
                           value={grid[monthKey]}
+                          aria-label={`${field.label} ${monthLabels[index]}`}
+                          aria-invalid={Boolean(error)}
+                          aria-describedby={descriptionIds}
                           onChange={(event) => {
                             const nextValue = Number(event.target.value);
                             setValues((current) => ({
@@ -339,7 +403,11 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                       </label>
                     ))}
                   </div>
-                  {error ? <p className="mt-2 text-xs text-rose-600">{error}</p> : null}
+                  {error ? (
+                    <p id={`${fieldId}-error`} className="mt-2 text-xs text-rose-600">
+                      {error}
+                    </p>
+                  ) : null}
                 </div>
               );
             }
@@ -348,11 +416,6 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
               <div key={field.key}>
                 <label className="mb-1 inline-flex items-center text-sm font-medium text-slate-800" htmlFor={fieldId}>
                   {field.label}
-                  {field.helpText ? (
-                    <span className="ml-1 cursor-help text-slate-400" title={field.helpText}>
-                      ?
-                    </span>
-                  ) : null}
                 </label>
                 <div className="flex items-center gap-2">
                   {field.prefix ? <span className="text-sm text-slate-500">{field.prefix}</span> : null}
@@ -365,6 +428,8 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                     step={field.step ?? 1}
                     min={field.min}
                     max={field.max}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={descriptionIds}
                     onChange={(event) => {
                       const numericValue = Number(event.target.value);
                       setValues((current) => ({
@@ -375,6 +440,11 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                   />
                   {field.suffix ? <span className="text-sm text-slate-500">{field.suffix}</span> : null}
                 </div>
+                {field.helpText ? (
+                  <p id={`${fieldId}-help`} className="mt-1 text-xs text-slate-500">
+                    {field.helpText}
+                  </p>
+                ) : null}
                 {field.slider ? (
                   <input
                     type="range"
@@ -392,7 +462,11 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
                     }}
                   />
                 ) : null}
-                {error ? <p className="mt-1 text-xs text-rose-600">{error}</p> : null}
+                {error ? (
+                  <p id={`${fieldId}-error`} className="mt-1 text-xs text-rose-600">
+                    {error}
+                  </p>
+                ) : null}
               </div>
             );
           })}
@@ -454,6 +528,8 @@ export function CalculatorRuntime({ slug }: CalculatorRuntimeProps) {
             </>
           ) : null}
         </div>
+
+        {output?.details?.length ? <CalculatorDetailsTable title={output.detailsTitle} rows={output.details} /> : null}
 
         {output?.chart ? (
           <div className="reveal-up space-y-3">

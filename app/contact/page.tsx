@@ -83,13 +83,15 @@ export default function ContactPage() {
             width={1200}
             height={800}
             className="h-64 w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
+            sizes="(min-width: 1024px) 32vw, 100vw"
           />
           <Image
             src="/images/office-front.jpg"
-            alt="Olson & Company office front"
+            alt="Top-down view of accounting and tax preparation materials"
             width={1200}
             height={800}
             className="h-64 w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
+            sizes="(min-width: 1024px) 32vw, 100vw"
           />
         </aside>
       </section>

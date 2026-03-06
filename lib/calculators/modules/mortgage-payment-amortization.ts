@@ -41,6 +41,13 @@ export const run: CalculatorRunner = (inputs) => {
         { key: "balance", name: "Remaining Balance", color: "#0ea5e9" },
         { key: "interestPaid", name: "Yearly Interest", color: "#64748b" }
       ]
-    }
+    },
+    detailsTitle: "Amortization schedule",
+    details: amortization.yearly.map((item) => ({
+      Year: item.year,
+      "Ending Balance": formatCurrency(item.balance),
+      "Interest Paid": formatCurrency(item.interestPaid),
+      "Principal Paid": formatCurrency(item.principalPaid)
+    }))
   };
 };

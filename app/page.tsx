@@ -59,11 +59,12 @@ export default function HomePage() {
         <div className="space-y-4">
           <Image
             src="/images/hero-office-exterior.jpg"
-            alt="Olson & Company office exterior"
+            alt="Top-down view of tax working papers and planning notes"
             width={1200}
             height={650}
             priority
             className="h-56 w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
+            sizes="(min-width: 1024px) 40vw, 100vw"
           />
           <Image
             src="/images/banner-bookkeeping.jpg"
@@ -71,6 +72,7 @@ export default function HomePage() {
             width={1200}
             height={650}
             className="h-56 w-full rounded-2xl border border-slate-200 object-cover shadow-sm"
+            sizes="(min-width: 1024px) 40vw, 100vw"
           />
         </div>
       </section>

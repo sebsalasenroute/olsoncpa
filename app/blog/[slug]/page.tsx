@@ -2,10 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { blogBySlug, blogPosts } from "@/lib/blog";
+import { blogBySlug, blogPosts, formatBlogDate } from "@/lib/blog";
 import { calculatorBySlug } from "@/lib/calculators/catalog";
 import { buildMetadata } from "@/lib/seo/metadata";
-import { buildBreadcrumbSchema } from "@/lib/schema";
+import { buildArticleSchema, buildBreadcrumbSchema } from "@/lib/schema";
 
 type BlogPageProps = {
   params: {
@@ -27,7 +27,7 @@ export function generateMetadata({ params }: BlogPageProps) {
     title: post.title,
     description: post.excerpt,
     path: `/blog/${post.slug}`,
-    image: "/images/hero-team-working.jpg"
+    image: "/images/banner-tax-season.jpg"
   });
 }
 
@@ -51,6 +51,15 @@ export default function BlogPostPage({ params }: BlogPageProps) {
           { name: post.title, path: `/blog/${post.slug}` }
         ])}
       />
+      <JsonLd
+        data={buildArticleSchema({
+          headline: post.title,
+          description: post.excerpt,
+          path: `/blog/${post.slug}`,
+          datePublished: post.publishedAt,
+          image: "/images/banner-tax-season.jpg"
+        })}
+      />
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -60,7 +69,7 @@ export default function BlogPostPage({ params }: BlogPageProps) {
       />
       <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
         <p className="text-xs uppercase tracking-wide text-slate-500">
-          {post.publishedAt} • {post.readMinutes} min read
+          <time dateTime={post.publishedAt}>{formatBlogDate(post.publishedAt)}</time> • {post.readMinutes} min read
         </p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">{post.title}</h1>
         <p className="mt-3 text-sm text-slate-700">{post.excerpt}</p>

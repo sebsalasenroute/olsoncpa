@@ -15,6 +15,8 @@ export function CalculatorHeroBanner({ title, subtitle, imageSrc }: CalculatorHe
         width={1400}
         height={420}
         className="h-48 w-full object-cover md:h-56"
+        priority
+        sizes="(min-width: 1280px) 1200px, 100vw"
       />
       <div className="absolute inset-0 bg-slate-900/55" />
       <div className="absolute inset-0 flex items-end p-6 md:p-8">

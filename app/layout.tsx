@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { TopBanner } from "@/components/banners/TopBanner";
 import { MobileQuickActions } from "@/components/shared/MobileQuickActions";
+import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/schema";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -13,6 +15,10 @@ export const metadata: Metadata = {
     template: "%s | Olson & Company"
   },
   description: siteConfig.description,
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.svg"
+  },
   alternates: {
     canonical: siteConfig.url
   }
@@ -28,6 +34,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-CA">
       <body className="bg-slate-100 text-slate-900">
+        <JsonLd data={buildOrganizationSchema()} />
+        <JsonLd data={buildWebsiteSchema()} />
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>

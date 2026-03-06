@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { blogPosts } from "@/lib/blog";
+import { blogPosts, formatBlogDate } from "@/lib/blog";
 import { buildMetadata } from "@/lib/seo/metadata";
-import { buildBreadcrumbSchema } from "@/lib/schema";
+import { buildBreadcrumbSchema, buildCollectionPageSchema } from "@/lib/schema";
 
 export const metadata = buildMetadata({
   title: "Accounting Insights Blog",
   description:
     "Practical articles on BC tax planning, bookkeeping workflows, payroll, and cash management for Lower Mainland clients.",
   path: "/blog",
-  image: "/images/hero-team-working.jpg"
+  image: "/images/banner-tax-season.jpg"
 });
 
 export default function BlogIndexPage() {
@@ -21,6 +21,18 @@ export default function BlogIndexPage() {
           { name: "Home", path: "/" },
           { name: "Blog", path: "/blog" }
         ])}
+      />
+      <JsonLd
+        data={buildCollectionPageSchema({
+          name: "Olson & Company Accounting Insights",
+          description:
+            "Practical articles on BC tax planning, bookkeeping workflows, payroll, and cash management for Lower Mainland clients.",
+          path: "/blog",
+          items: blogPosts.map((post) => ({
+            name: post.title,
+            path: `/blog/${post.slug}`
+          }))
+        })}
       />
       <Breadcrumbs
         items={[
@@ -40,7 +52,7 @@ export default function BlogIndexPage() {
         {blogPosts.map((post) => (
           <article key={post.slug} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-slate-500">
-              {post.publishedAt} • {post.readMinutes} min read
+              <time dateTime={post.publishedAt}>{formatBlogDate(post.publishedAt)}</time> • {post.readMinutes} min read
             </p>
             <h2 className="mt-2 text-xl font-semibold text-slate-900">{post.title}</h2>
             <p className="mt-2 text-sm text-slate-700">{post.excerpt}</p>
